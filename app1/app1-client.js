@@ -24,39 +24,46 @@ void function () {
 		time = 500;
 
 		socket.on('connect', function () {
-			log.debug('connect! time:', (new Date - startTime)/1000, 'msec');
-			socket.emit('my other event', {id:++seq, my:'connect'});
-			process.nextTick(() => socket.emit('my other event', {id:++seq, my:'connect2'}));
-		});
+			var msg = {id:++seq, my:'connect', tm:tm()};
+			log.debug('connect:', msg, ['time:', (new Date - startTime)/1000, 'msec']);
+			socket.emit('my other event', msg);
+
+			setImmediate(() => {
+				var msg = {id:++seq, my:'connect2', tm:tm()};
+				log.trace('other', msg);
+				socket.emit('my other event', msg);
+			});
+
+			setTimeout(() => {
+				socket.close();
+				socket = null;
+			}, 16000)
+
+			setTimeout(function timer() {
+				time *= 2;
+				if (time >= 60000) time = 60000;
+
+				if (!socket) return connect();
+
+				setTimeout(timer, time);
+
+				var msg = {id:++seq, my:'timer', tm:tm(), bf:new Buffer('abc')};
+				log.trace('timer', msg);
+				socket.emit('my timer event', msg);
+			}, time);
+
+		}); // socket on connect
 
 		socket.on('news', function (msg) {
 			log.trace('news', msg);
 			msg = {id:++seq, my:'other', tm:tm()};
 			log.trace('other', msg);
 			socket.emit('my other event', msg);
-		});
+		}); // socket on first message
 
 		socket.on('disconnect', function () {
 			log.debug('disconnect!');
-		});
-
-		setTimeout(() => {
-			socket.close();
-			socket = null;
-		}, 16000)
-
-		setTimeout(function timer() {
-			time *= 2;
-			if (time >= 60000) time = 60000;
-
-			if (!socket) return connect();
-
-			setTimeout(timer, time);
-
-			var msg = {id:++seq, my:'timer', tm:tm(), bf:new Buffer('abc')};
-			log.trace('timer', msg);
-			socket.emit('my timer event', msg);
-		}, time);
+		}); // socket on disconnect
 
 	}
 

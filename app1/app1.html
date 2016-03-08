@@ -26,40 +26,51 @@ void function () {
 	connect();
 
 	function connect() {
-
+		var startTime = new Date;
 		socket = io(location.href);
+		time = 500;
+
+		socket.on('connect', function () {
+			var msg = {id:++seq, my:'connect', tm:tm()};
+			console.info(tm(), 'connect', msg, 'time:', (new Date - startTime)/1000, 'msec');
+			socket.emit('my other event', msg);
+
+			setTimeout(function () {
+				var msg = {id:++seq, my:'connect2', tm:tm()};
+				console.log(tm(), 'other:', msg);
+				socket.emit('my other event', msg);
+			}, 0);
+
+			setTimeout(function () {
+				socket.close();
+				socket = null;
+			}, 16000)
+
+			setTimeout(function timer() {
+				time *= 2;
+				if (time >= 60000) time = 60000;
+
+				if (!socket) return connect();
+
+				setTimeout(timer, time);
+
+				var msg = {id:++seq, my:'timer', tm:tm()};
+				console.log(tm(), 'timer:', msg);
+				socket.emit('my timer event', msg);
+			}, time);
+
+		}); // socket on connect
 
 		socket.on('news', function (msg) {
 			console.log(tm(), 'news:', msg);
 			msg = {id:++seq, my:'other', tm:tm()};
 			console.log(tm(), 'other:', msg);
 			socket.emit('my other event', msg);
-		});
-		socket.on('connect', function () {
-			time = 500;
-			console.info(tm(), 'connect');
-		});
+		}); // socket on first message
+
 		socket.on('disconnect', function () {
 			console.info(tm(), 'disconnect');
-		});
-
-		setTimeout(() => {
-			socket.close();
-			socket = null;
-		}, 16000)
-
-		setTimeout(function timer() {
-			time *= 2;
-			if (time >= 60000) time = 60000;
-
-			if (!socket) return connect();
-
-			setTimeout(timer, time);
-
-			var msg = {id:++seq, my:'timer', tm:tm()};
-			console.log(tm(), 'timer:', msg);
-			socket.emit('my timer event', msg);
-		}, time);
+		}); // socket on disconnect
 
 	}
 
