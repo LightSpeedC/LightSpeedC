@@ -46,7 +46,7 @@ void function () {
 
 	io.on('connection', function (socket) {
 		var msg = {hello:'world', 'こんにちは':'世界', tm:tm()};
-		log.trace('news:', msg);
+		log.debug('connect! news:', msg);
 		socket.emit('news', msg);
 		socket.on('my other event', function (msg) {
 			log.trace('other:', msg);
@@ -55,7 +55,7 @@ void function () {
 			log.trace('timer:', msg);
 		});
 		socket.on('disconnect', function () {
-			log.trace('disconnect!');
+			log.debug('disconnect!');
 		});
 	});
 
