@@ -22,12 +22,14 @@ void function () {
 	var seq = 1000;
 
 	console.log(tm(), 'location.href:', location.href);
+	// Object.keys(location).forEach(k => console.log(typeof location[k], '['+k+']', '"' + location[k] + '"'));
+	var origin = location.origin || location.protocol + '//' + location.host;
 	var socket;
 	connect();
 
 	function connect() {
 		var startTime = new Date;
-		socket = io(location.href);
+		socket = io(origin);
 		time = 500;
 
 		socket.on('connect', function () {
