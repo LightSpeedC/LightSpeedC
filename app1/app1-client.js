@@ -15,7 +15,7 @@ void function () {
 	var time = 500;
 	var seq = 1000;
 
-	var socket;
+	var socket, pingTime;
 	connect();
 
 	function connect() {
@@ -50,9 +50,18 @@ void function () {
 				var msg = {id:++seq, my:'timer', tm:tm(), bf:new Buffer('abc')};
 				log.trace('timer', msg);
 				socket.emit('my timer event', msg);
+
+				socket.emit('ping!', {});
+				log.debug('ping!');
+				pingTime = new Date;
 			}, time);
 
 		}); // socket on connect
+
+		socket.on('pong!', function () {
+			log.debug('pong!', new Date - pingTime, 'msec');
+			socket.emit('pong!', {});
+		}); // socket on pong
 
 		socket.on('news', function (msg) {
 			log.trace('news', msg);

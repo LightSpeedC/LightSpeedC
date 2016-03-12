@@ -48,12 +48,24 @@ void function () {
 		var msg = {hello:'world', 'こんにちは':'世界', tm:tm()};
 		log.debug('connect! news:', msg);
 		socket.emit('news', msg);
+
 		socket.on('my other event', function (msg) {
 			log.trace('other:', msg);
 		});
+
 		socket.on('my timer event', function (msg) {
 			log.trace('timer:', msg);
 		});
+
+		socket.on('ping!', function (msg) {
+			log.trace('ping!:', msg);
+			socket.emit('pong!', msg);
+		});
+
+		socket.on('pong!', function (msg) {
+			log.trace('pong!:', msg);
+		});
+
 		socket.on('disconnect', function () {
 			log.debug('disconnect!');
 		});
