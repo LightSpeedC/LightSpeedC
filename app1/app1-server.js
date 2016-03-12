@@ -28,7 +28,7 @@ void function () {
 
 	function handler(req, res) {
 		log.debug(req.method, req.url);
-		var file = req.url === '/' ? '/app1.html' : req.url;
+		var file = req.url === '/' ? '/index.html' : req.url;
 		fs.readFile(__dirname + file,
 		function (err, data) {
 			if (err) {
