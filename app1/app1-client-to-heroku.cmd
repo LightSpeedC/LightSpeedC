@@ -1,2 +1,2 @@
-node app1-client %APP_LIGHTSPEEDC_URL%
+node app1-client %APPLSC_URL%
 pause
