@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge, Chrome=1">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Expires" content="Thu, 01 Dec 1994 16:00:00 GMT">
+</head>
+
+<body>
+日本語
+<script src="console-to-window.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+void function () {
+	'use strict';
+
+	// time 時刻
+	var tm = function () { return new Date().toLocaleTimeString(); };
+	var time = 500;
+	var seq = 1000;
+
+	console.log(tm(), 'location.href:', location.href);
+	// Object.keys(location).forEach(k => console.log(typeof location[k], '['+k+']', '"' + location[k] + '"'));
+	var origin = location.origin || location.protocol + '//' + location.host;
+	var socket, pingTime;
+	connect();
+
+	function connect() {
+		var startTime = new Date;
+		socket = io(origin);
+		time = 500;
+
+		socket.on('connect', function () {
+			var msg = {id:++seq, my:'connect', tm:tm()};
+			console.info(tm(), 'connect', msg, 'time:', (new Date - startTime)/1000, 'msec');
+			socket.emit('my other event', msg);
+
+			setTimeout(function () {
+				var msg = {id:++seq, my:'connect2', tm:tm()};
+				console.log(tm(), 'other:', msg);
+				socket.emit('my other event', msg);
+			}, 0);
+
+			setTimeout(function () {
+				socket.close();
+				socket = null;
+			}, 16000)
+
+			setTimeout(function timer() {
+				time *= 2;
+				if (time >= 60000) time = 60000;
+
+				if (!socket) return connect();
+
+				setTimeout(timer, time);
+
+				var msg = {id:++seq, my:'timer', tm:tm()};
+				console.log(tm(), 'timer:', msg);
+				socket.emit('my timer event', msg);
+
+				socket.emit('ping!', {});
+				console.log(tm(), 'ping!');
+				pingTime = new Date;
+			}, time);
+
+		}); // socket on connect
+
+		socket.on('pong!', function () {
+			console.log(tm(), 'pong!', new Date - pingTime, 'msec');
+			socket.emit('pong!', {});
+		}); // socket on pong
+
+		socket.on('news', function (msg) {
+			console.log(tm(), 'news:', msg);
+			msg = {id:++seq, my:'other', tm:tm()};
+			console.log(tm(), 'other:', msg);
+			socket.emit('my other event', msg);
+		}); // socket on first message
+
+		socket.on('disconnect', function () {
+			console.info(tm(), 'disconnect');
+		}); // socket on disconnect
+
+	}
+
+}();
+</script>
+
+</body>
+</html>
